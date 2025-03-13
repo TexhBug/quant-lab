@@ -13,7 +13,7 @@ import LoadingBar from "@cloudscape-design/chat-components/loading-bar"
 import { useEffect, useState } from "react";
 
 export default function ({ parameters }) {
-    
+    const API_BASE_URL = "https://quant-lab.onrender.com";
     const [premium, setPremium] = useState(null);
     const [extendedPremiums, setExtendedPremiums] = useState(null);
 
@@ -25,7 +25,7 @@ export default function ({ parameters }) {
             const reqBody = JSON.stringify(parameters);
             const getPremium = async () => {
                 try {
-                    const response = await fetch(`http://127.0.0.1:5000/api/volatility/${model}/${task}`, {
+                    const response = await fetch(`${API_BASE_URL}/api/volatility/${model}/${task}`, {
                         method: "POST",
                         headers: {
                         "Content-Type": "application/json",
