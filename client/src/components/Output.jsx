@@ -1,26 +1,24 @@
 import React from 'react';
 import {
     ExpandableSection,
-    Badge,
-    KeyValuePairs,
-    Container,
-    Header,
-    Table,
-    LiveRegion,
-    Box
 } from '@cloudscape-design/components';
-import LoadingBar from "@cloudscape-design/chat-components/loading-bar"
 import { useEffect, useState } from "react";
+import ExtendedPremiumTable from './ExtendedPremiumTable';
+import ExtendedPremiumChart from './ExtendedPremiumChart';
+import LoadingData from './LoadingData';
+import Premiums from './Premiums';
 
 export default function ({ parameters }) {
     const API_BASE_URL = "https://quant-lab.onrender.com";
     const [premium, setPremium] = useState(null);
     const [extendedPremiums, setExtendedPremiums] = useState(null);
+    const [displayPremiumChart, setDisplayPremiumChart] = useState(false);
 
     useEffect(() => {
         if(parameters !== null && parameters.model && parameters.modelTask){
             const model = parameters.model;
             const task = parameters.modelTask;
+            setPremium(null);
             setExtendedPremiums(null);
             const reqBody = JSON.stringify(parameters);
             const getPremium = async () => {
@@ -67,92 +65,16 @@ export default function ({ parameters }) {
         premium && (
             <>
             <ExpandableSection headerText="Option Premium & Configurations (in $)" defaultExpanded={true}>
-                <Container
-                    variant="stacked"
-                    header={
-                        <Header headingTagOverride="h4">
-                            Premiums
-                        </Header>
-                    }
-                >
-                    <KeyValuePairs
-                        columns={3}
-                        items={[
-                            {
-                                label: "Call Option Premium",
-                                value: <Badge color="green">{premium["call"]}</Badge>
-                            },
-                            {
-                                label: "Strike Price",
-                                value: <Badge color="grey">{premium["strike_price"]}</Badge>
-                            },
-                            {
-                                label: "Put Option Premium",
-                                value: <Badge color="red">{premium["put"]}</Badge>
-                            }
-                        ]}
-                    />
-                </Container>
-                <Table
-                    variant="stacked"
-                    header={
-                        <Header variant="h4">Configurations</Header>
-                    }
-                    columnDefinitions={[
-                        {
-                        id: "parameter",
-                        header: "Parameter",
-                        cell: item => item.name,
-                        isRowHeader: true
-                        },
-                        {
-                        id: "value",
-                        header: "Current value",
-                        cell: item => item.value
-                        }
-                    ]}
-                    items={Object.entries(parameters).map(([key, value]) => ({
-                        name: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
-                        value: value
-                    }))}
-                />
+                <Premiums premium={premium} parameters={parameters}/>
             </ExpandableSection>
-            <ExpandableSection headerText="View for extended Strike prices">
-                {(extendedPremiums && extendedPremiums) ? 
-                    <Table
-                        variant="stacked"
-                        header={
-                            <Header variant="h4">Option Premium</Header>
-                        }
-                        columnDefinitions={[
-                            {
-                                id: "call",
-                                header: "Call Option Premium",
-                                cell: item => item.call,
-                            },
-                            {
-                                id: "strike_price",
-                                header: "Strike Price",
-                                cell: item => item.strike_price
-                            },
-                            {
-                                id: "put",
-                                header: "Put Option Premium",
-                                cell: item => item.put
-                            }
-                        ]}
-                        items={extendedPremiums}
-                    />
+            <ExpandableSection headerText="View for extended Strike prices" defaultExpanded={true}>
+                {(extendedPremiums && extendedPremiums) ? (
+                    (displayPremiumChart) ? 
+                    <ExtendedPremiumChart extendedPremiums={extendedPremiums} displayPremiumChart={displayPremiumChart} setDisplayPremiumChart={setDisplayPremiumChart}/>
+                    : <ExtendedPremiumTable extendedPremiums={extendedPremiums} displayPremiumChart={displayPremiumChart} setDisplayPremiumChart={setDisplayPremiumChart}/>
+                )
                 : 
-                    <LiveRegion>
-                        <Box
-                            margin={{ bottom: "xs", left: "l" }}
-                            color="text-body-secondary"
-                        >
-                            Fetching premium chart
-                        </Box>
-                        <LoadingBar variant="gen-ai" />
-                    </LiveRegion>
+                    <LoadingData message={"Fetching premium chart"}/>
                 }
             </ExpandableSection>
         </>

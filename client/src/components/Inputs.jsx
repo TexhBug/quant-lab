@@ -15,7 +15,7 @@ import {
     Icon
 } from "@cloudscape-design/components";
 
-export default function Inputs( {setParameters} ) {
+export default function Inputs( {setParameters, setNavigationOpen} ) {
     const [model, setModel] = useState(null);
     const [modelTask, setModelTask] = useState(null);
     const [parametersOpen, setParametersOpen] = useState(false);
@@ -98,6 +98,7 @@ export default function Inputs( {setParameters} ) {
             <Box margin="xs" padding={{ top: "xxl" }}> 
                 <ExpandableSection 
                     headerText="Parameters"
+                    variant="footer"
                     defaultExpanded={parametersOpen}>
                     {(!parametersOpen) ? <Alert
                         statusIconAriaLabel="Error"
@@ -253,6 +254,7 @@ export default function Inputs( {setParameters} ) {
                                         variant="primary" 
                                         disabled={false}
                                         onClick={() => {
+                                            setNavigationOpen(false);
                                             setParameters({
                                                 model: model["value"],
                                                 modelTask: modelTask["value"],

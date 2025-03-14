@@ -5,7 +5,7 @@ import {
   SideNavigation,
   Header,
   SpaceBetween,
-  ContentLayout
+  ContentLayout,
 } from '@cloudscape-design/components';
 import Inputs from './Inputs';
 import About from './About';
@@ -23,7 +23,7 @@ export default function AppLayoutPreview() {
             <SideNavigation
             header={{text: <Header>Input Panel</Header>}}
             />
-            <Inputs setParameters={setParameters}/>
+            <Inputs setParameters={setParameters} setNavigationOpen={setNavigationOpen}/>
           </>
         }
         content={

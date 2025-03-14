@@ -33,14 +33,12 @@ def get_volatility_factor(up_factor, down_factor): # returns 'v'
 def get_option_premium(stock_price, strike_price, risk_neutral_probability, discounted_rate, up_factor, down_factor, evaluation_period):
     # Computing final price for stock using numpy array (vectors)
     STOCK_PRICES = stock_price * (down_factor ** (np.arange(evaluation_period, -1, -1))) * (up_factor ** (np.arange(0, evaluation_period+1, 1)))
-    print(STOCK_PRICES)
     CALL_PRICES = np.maximum(STOCK_PRICES - strike_price, np.zeros(evaluation_period + 1))
     PUT_PRICES = np.maximum(strike_price - STOCK_PRICES, np.zeros(evaluation_period + 1))
 
     # Now we have possible final prices for call and put option we can traverse back
     for i in np.arange(evaluation_period, 0, -1):
         CALL_PRICES = discounted_rate * ((risk_neutral_probability * CALL_PRICES[1:i+1]) + ((1 - risk_neutral_probability) * CALL_PRICES[0:i]))
-        print(CALL_PRICES)
         PUT_PRICES = discounted_rate * ((risk_neutral_probability * PUT_PRICES[1:i+1]) + ((1 - risk_neutral_probability) * PUT_PRICES[0:i]))
 
     return {
@@ -73,7 +71,6 @@ def bopm_op():
         down_factor,
         evaluation_period
     )
-    print(premium)
     return premium
     
 
