@@ -44,7 +44,7 @@ export default function ({ parameters }) {
 
             const getExtendedPremiums = async () => {
                 try {
-                    const response = await fetch(`http://127.0.0.1:5000/api/volatility/${model}/${task}/extended`, {
+                    const response = await fetch(`${API_BASE_URL}/api/volatility/${model}/${task}/extended`, {
                         method: "POST",
                         headers: {
                         "Content-Type": "application/json",
