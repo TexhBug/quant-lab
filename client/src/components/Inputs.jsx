@@ -12,7 +12,8 @@ import {
     Slider,
     Checkbox,
     Popover,
-    Icon
+    Icon,
+    Flashbar
 } from "@cloudscape-design/components";
 
 export default function Inputs( {setParameters, setNavigationOpen} ) {
@@ -28,6 +29,15 @@ export default function Inputs( {setParameters, setNavigationOpen} ) {
     const [arbitrageallowed, setArbitrageAllowed] = useState(false);
     const [maturityTime, setMaturityTime] = useState(2);
     const [evaluationPeriod, setEvaluationPeriod] = useState(10);
+    const [warning, setWarning] = useState([{
+        type: "warning",
+        content:
+          "Extreme parameters may lead to numerical instability and produce unrealistic results",
+        dismissible: true,
+        dismissLabel: "Dismiss message",
+        onDismiss: () => setWarning([]),
+        id: "message_1"
+    }]);
 
     return (
         <>  
@@ -105,7 +115,8 @@ export default function Inputs( {setParameters, setNavigationOpen} ) {
                         type="error"
                         header="Please select Model and Operation"
                         />: 
-                        <>
+                        <>  
+                            <Flashbar items={warning} />
                             <Box margin="xs">
                                 <FormField label={
                                     <>

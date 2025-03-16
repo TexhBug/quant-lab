@@ -1,6 +1,8 @@
 import React from 'react';
 import {
     ExpandableSection,
+    StatusIndicator,
+    Modal
 } from '@cloudscape-design/components';
 import { useEffect, useState } from "react";
 import ExtendedPremiumTable from './ExtendedPremiumTable';
@@ -13,6 +15,15 @@ export default function ({ parameters }) {
     const [premium, setPremium] = useState(null);
     const [extendedPremiums, setExtendedPremiums] = useState(null);
     const [displayPremiumChart, setDisplayPremiumChart] = useState(false);
+    const [apiCall, setApiCall] = useState({
+        normal: true,
+        extended: true
+    });
+    const [error, setError] = useState({
+        error: null,
+        message: null
+    })
+    const [errorModal, setErrorModal] = useState(false);
 
     useEffect(() => {
         if(parameters !== null && parameters.model && parameters.modelTask){
@@ -32,8 +43,23 @@ export default function ({ parameters }) {
                         mode: "cors"
                     });
                     const result = await response.json();
-                    setPremium(result);
-                    console.log("Success:", result);
+                    console.log(result);
+                    if(response.status === 200) {
+                        setPremium(result);
+                        console.log("Success:", result);
+                    }
+                    else{
+                        setApiCall((apiCall) => ({
+                            ...apiCall,
+                            normal: false
+                        }));
+                        setError((error) => ({
+                            ...error,
+                            error: result.error,
+                            message: result.message
+                        }));
+                        setErrorModal(true);
+                    }
                 } catch (error) {
                     console.error("Error:", error);
                 }
@@ -51,8 +77,16 @@ export default function ({ parameters }) {
                         mode: "cors"
                     });
                     const result = await response.json();
-                    setExtendedPremiums(result);
-                    console.log("Success:", result);
+                    if(response.status === 200) {
+                        setExtendedPremiums(result);
+                        console.log("Success:", result);
+                    }
+                    else {
+                        setApiCall((apiCall) => ({
+                            ...apiCall,
+                            extended: false
+                        }));
+                    }
                 } catch (error) {
                     console.error("Error:", error);
                 }
@@ -62,22 +96,30 @@ export default function ({ parameters }) {
     }, [parameters]);
 
     return (
-        premium && (
-            <>
+        <>
             <ExpandableSection headerText="Option Premium & Configurations (in $)" defaultExpanded={true}>
-                <Premiums premium={premium} parameters={parameters}/>
+                { (premium) ? <Premiums premium={premium} parameters={parameters}/> : ((!apiCall.noraml) ? 
+                    <StatusIndicator type="error">Failed to get Option Premium</StatusIndicator> : 
+                    <LoadingData message={"Fetching premium data"}/> 
+                )}
             </ExpandableSection>
             <ExpandableSection headerText="View for extended Strike prices" defaultExpanded={true}>
-                {(extendedPremiums && extendedPremiums) ? (
+                {(extendedPremiums) ? (
                     (displayPremiumChart) ? 
                     <ExtendedPremiumChart extendedPremiums={extendedPremiums} displayPremiumChart={displayPremiumChart} setDisplayPremiumChart={setDisplayPremiumChart}/>
                     : <ExtendedPremiumTable extendedPremiums={extendedPremiums} displayPremiumChart={displayPremiumChart} setDisplayPremiumChart={setDisplayPremiumChart}/>
                 )
                 : 
-                    <LoadingData message={"Fetching premium chart"}/>
+                    ((!apiCall.extended) ? <StatusIndicator type="error">Failed to get Option Premium</StatusIndicator> : <LoadingData message={"Fetching extended premium data"}/>)
                 }
             </ExpandableSection>
+            <Modal
+                onDismiss={() => setErrorModal(false)}
+                visible={errorModal}
+                header={error.error}
+                >
+                {error.message}
+            </Modal>
         </>
-        )
     )
 }
