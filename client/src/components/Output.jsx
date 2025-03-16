@@ -16,8 +16,8 @@ export default function ({ parameters }) {
     const [extendedPremiums, setExtendedPremiums] = useState(null);
     const [displayPremiumChart, setDisplayPremiumChart] = useState(false);
     const [apiCall, setApiCall] = useState({
-        normal: true,
-        extended: true
+        normal: null,
+        extended: null
     });
     const [error, setError] = useState({
         error: null,
@@ -43,10 +43,12 @@ export default function ({ parameters }) {
                         mode: "cors"
                     });
                     const result = await response.json();
-                    console.log(result);
                     if(response.status === 200) {
                         setPremium(result);
-                        console.log("Success:", result);
+                        setApiCall((apiCall) => ({
+                            ...apiCall,
+                            normal: true
+                        }));
                     }
                     else{
                         setApiCall((apiCall) => ({
@@ -79,7 +81,10 @@ export default function ({ parameters }) {
                     const result = await response.json();
                     if(response.status === 200) {
                         setExtendedPremiums(result);
-                        console.log("Success:", result);
+                        setApiCall((apiCall) => ({
+                            ...apiCall,
+                            extended: true
+                        }));
                     }
                     else {
                         setApiCall((apiCall) => ({
@@ -98,7 +103,7 @@ export default function ({ parameters }) {
     return (
         <>
             <ExpandableSection headerText="Option Premium & Configurations (in $)" defaultExpanded={true}>
-                { (premium) ? <Premiums premium={premium} parameters={parameters}/> : ((!apiCall.noraml) ? 
+                { (premium) ? <Premiums premium={premium} parameters={parameters}/> : ((apiCall.noraml !== null && apiCall.normal === false) ? 
                     <StatusIndicator type="error">Failed to get Option Premium</StatusIndicator> : 
                     <LoadingData message={"Fetching premium data"}/> 
                 )}
@@ -110,7 +115,7 @@ export default function ({ parameters }) {
                     : <ExtendedPremiumTable extendedPremiums={extendedPremiums} displayPremiumChart={displayPremiumChart} setDisplayPremiumChart={setDisplayPremiumChart}/>
                 )
                 : 
-                    ((!apiCall.extended) ? <StatusIndicator type="error">Failed to get Option Premium</StatusIndicator> : <LoadingData message={"Fetching extended premium data"}/>)
+                    ((apiCall.extended !== null && apiCall.extended === false) ? <StatusIndicator type="error">Failed to get Option Premium</StatusIndicator> : <LoadingData message={"Fetching extended premium data"}/>)
                 }
             </ExpandableSection>
             <Modal

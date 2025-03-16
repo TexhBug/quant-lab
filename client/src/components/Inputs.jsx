@@ -269,8 +269,8 @@ export default function Inputs( {setParameters, setNavigationOpen} ) {
                                             setParameters({
                                                 model: model["value"],
                                                 modelTask: modelTask["value"],
-                                                upFactor: (1+upFactor/100),
-                                                downFactor: (1-downFactor/100),
+                                                upFactor: (1+upFactor/100).toFixed(2),
+                                                downFactor: (1-downFactor/100).toFixed(2),
                                                 stockPrice: stockPrice,
                                                 strikePrice: strikePrice,
                                                 step: step,
