@@ -16,21 +16,20 @@ class BinomialOptionPricer:
         """
         try:
             # Extract parameters
-            up_factor = float(data["upFactor"])
-            down_factor = float(data["downFactor"])
+            volatility = float(data["volatility"])
             maturity_time = float(data["maturityTime"])
             interest_rate = float(data["riskFreeInterestRate"])
             stock_price = float(data["stockPrice"])
             strike_price = float(data["strikePrice"])
             evaluation_period = int(data["evaluationPeriod"])
             step = int(data["step"])
-            print(up_factor, down_factor, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, step)
+            volatility_step = float(data["volatilityStep"])
 
             # Validate non-negative parameters
-            if any(val < 0 for val in [up_factor, down_factor, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, step]):
+            if any(val < 0 for val in [volatility, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, step, volatility_step]):
                 raise ValueError("All parameters must be non-negative.")
 
-            return up_factor, down_factor, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, step
+            return volatility, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, step, volatility_step
 
         except KeyError as e:
             raise ValueError(f"Missing required parameter: {e}")
@@ -41,6 +40,16 @@ class BinomialOptionPricer:
     def calculate_time_interval(evaluation_period: int, maturity_time: float) -> float:
         """Calculate the time interval for each step in the binomial tree."""
         return round(maturity_time / evaluation_period, 3)
+    
+    @staticmethod
+    def calculate_growth_factor(volatility: float, time_interval: float) -> float:
+        """Calculate the growth factor or the appreciation factor, u."""
+        return round(np.exp(volatility * np.sqrt(time_interval)), 3)
+    
+    @staticmethod
+    def calculate_decay_factor(volatility: float, time_interval: float) -> float:
+        """Calculate the decay factor or the appreciation factor, d."""
+        return round(np.exp(-volatility * np.sqrt(time_interval)), 3)
 
     @staticmethod
     def calculate_risk_neutral_probability(time_interval: float, up_factor: float, down_factor: float, interest_rate: float) -> float:
@@ -100,13 +109,14 @@ def bopm_op():
     try:
         data = request.json
         # Validate and extract parameters
-        up_factor, down_factor, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, _ = BinomialOptionPricer.validate_parameters(data)
+        volatility, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, _, _ = BinomialOptionPricer.validate_parameters(data)
 
         # Calculate intermediate values
         time_interval = BinomialOptionPricer.calculate_time_interval(evaluation_period, maturity_time)
+        up_factor = BinomialOptionPricer.calculate_growth_factor(volatility, time_interval)
+        down_factor = BinomialOptionPricer.calculate_decay_factor(volatility, time_interval)
         risk_neutral_probability = BinomialOptionPricer.calculate_risk_neutral_probability(time_interval, up_factor, down_factor, interest_rate)
         discounted_rate = BinomialOptionPricer.calculate_discounted_rate(interest_rate, time_interval)
-
         # Calculate option premium
         premium = BinomialOptionPricer.calculate_option_premium(
             stock_price, strike_price, risk_neutral_probability, discounted_rate, up_factor, down_factor, evaluation_period
@@ -125,10 +135,12 @@ def bopm_op_extended():
     try:
         data = request.json
         # Validate and extract parameters
-        up_factor, down_factor, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, step = BinomialOptionPricer.validate_parameters(data)
+        volatility, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, step, _ = BinomialOptionPricer.validate_parameters(data)
 
         # Calculate intermediate values
         time_interval = BinomialOptionPricer.calculate_time_interval(evaluation_period, maturity_time)
+        up_factor = BinomialOptionPricer.calculate_growth_factor(volatility, time_interval)
+        down_factor = BinomialOptionPricer.calculate_decay_factor(volatility, time_interval)
         risk_neutral_probability = BinomialOptionPricer.calculate_risk_neutral_probability(time_interval, up_factor, down_factor, interest_rate)
         discounted_rate = BinomialOptionPricer.calculate_discounted_rate(interest_rate, time_interval)
 
@@ -150,6 +162,46 @@ def bopm_op_extended():
     except Exception as e:
         return jsonify({"error": "InternalServerError", "message": str(e)}), 500
 
+
+@app.route("/api/volatility/BOPM/VPH", methods=["POST"])
+def bopm_vph():
+    """Calculate Price fluctuations against volatility."""
+    try:
+        data = request.json
+        # Validate and extract parameters
+        volatility, maturity_time, interest_rate, stock_price, strike_price, evaluation_period, step, volatility_step = BinomialOptionPricer.validate_parameters(data)
+
+        time_interval = BinomialOptionPricer.calculate_time_interval(evaluation_period, maturity_time)
+        discounted_rate = BinomialOptionPricer.calculate_discounted_rate(interest_rate, time_interval)
+
+        heatmap = {}
+        for i in range(0, 10):
+            adjusted_volatility = round(volatility + i * volatility_step, 3)
+            # Calculate intermediate values
+            up_factor = BinomialOptionPricer.calculate_growth_factor(adjusted_volatility, time_interval)
+            down_factor = BinomialOptionPricer.calculate_decay_factor(adjusted_volatility, time_interval)
+            risk_neutral_probability = BinomialOptionPricer.calculate_risk_neutral_probability(time_interval, up_factor, down_factor, interest_rate)
+        
+
+            # Calculate premiums for a range of strike prices
+            extended_premiums = []
+            for i in range(-10, 11):
+                adjusted_strike_price = strike_price + i * step
+                if adjusted_strike_price < 0:
+                    continue  # Skip negative strike prices
+                premium = BinomialOptionPricer.calculate_option_premium(
+                    stock_price, adjusted_strike_price, risk_neutral_probability, discounted_rate, up_factor, down_factor, evaluation_period
+                )
+                extended_premiums.append(premium)
+
+            heatmap[adjusted_volatility] = extended_premiums
+        
+        return jsonify(heatmap)
+
+    except ValueError as e:
+        return jsonify({"error": "InvalidInput", "message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": "InternalServerError", "message": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

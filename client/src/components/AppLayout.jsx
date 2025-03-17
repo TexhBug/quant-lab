@@ -10,10 +10,12 @@ import {
 import Inputs from './Inputs';
 import About from './About';
 import Output from './Output';
+import OutputHeatmap from './OutputHeatmap';
 
 export default function AppLayoutPreview() {
     const [navigationOpen, setNavigationOpen] = useState(true);
     const [parameters, setParameters] = useState(null);
+
   return (
       <AppLayout
         navigationOpen={navigationOpen}
@@ -40,10 +42,22 @@ export default function AppLayoutPreview() {
                   </SpaceBetween>
               }
           >
-              {(parameters) ? <Output parameters={parameters}/> : <About/> }
+              {(parameters) ? displayOutput(parameters) : <About/> }
           </ContentLayout>
         }
         toolsHide={true} 
       />
   );
+}
+
+const displayOutput = (parameters) => {
+  const task = parameters.modelTask;
+    switch(task){
+      case "OP":
+        return <Output parameters={parameters}/>
+      case "VPH":
+        return <OutputHeatmap parameters={parameters}/>
+      default:
+        return null
+    }
 }

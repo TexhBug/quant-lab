@@ -10,7 +10,7 @@ import ExtendedPremiumChart from './ExtendedPremiumChart';
 import LoadingData from './LoadingData';
 import Premiums from './Premiums';
 
-export default function ({ parameters }) {
+export default function Output ({ parameters }) {
     const API_BASE_URL = "https://quant-lab.onrender.com";
     const [premium, setPremium] = useState(null);
     const [extendedPremiums, setExtendedPremiums] = useState(null);
@@ -103,7 +103,7 @@ export default function ({ parameters }) {
     return (
         <>
             <ExpandableSection headerText="Option Premium & Configurations (in $)" defaultExpanded={true}>
-                { (premium) ? <Premiums premium={premium} parameters={parameters}/> : ((apiCall.noraml !== null && apiCall.normal === false) ? 
+                { (premium) ? <Premiums premium={premium} parameters={parameters}/> : ((apiCall.normal !== null && apiCall.normal === false) ? 
                     <StatusIndicator type="error">Failed to get Option Premium</StatusIndicator> : 
                     <LoadingData message={"Fetching premium data"}/> 
                 )}

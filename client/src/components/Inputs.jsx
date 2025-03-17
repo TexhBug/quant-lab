@@ -20,12 +20,12 @@ export default function Inputs( {setParameters, setNavigationOpen} ) {
     const [model, setModel] = useState(null);
     const [modelTask, setModelTask] = useState(null);
     const [parametersOpen, setParametersOpen] = useState(false);
-    const [upFactor, setUpFactor] = useState(7);
-    const [downFactor, setDownFactor] = useState(3);
+    const [volatility, setVolatility] = useState(7);
+    const [volatilityStep, setVolatilityStep] = useState(5);
     const [stockPrice, setStockPrice] = useState(100);
     const [strikePrice, setStrikePrice] = useState(105);
     const [step, setStep] = useState(5)
-    const [rate, setRate] = useState(4.4);
+    const [rate, setRate] = useState(2);
     const [arbitrageallowed, setArbitrageAllowed] = useState(false);
     const [maturityTime, setMaturityTime] = useState(2);
     const [evaluationPeriod, setEvaluationPeriod] = useState(10);
@@ -71,7 +71,7 @@ export default function Inputs( {setParameters, setNavigationOpen} ) {
                                 }
                                 options={[
                                     { label: "Option Pricing", value: "OP" },
-                                    { label: "Volatility-Price HeatMap", value: "VPH", disabled: true, disabledReason: "This operation is not yet supported" }
+                                    { label: "Volatility-Price HeatMap", value: "VPH" }
                                 ]}
                                 placeholder="Choose Operation"
                                 autoFocus
@@ -166,47 +166,36 @@ export default function Inputs( {setParameters, setNavigationOpen} ) {
                                 </FormField>
                             </Box>
                             <Box margin="xs" padding={{ top: "s" }}>
-                                <FormField label={<>Appreciation factor (u) : {(1 + upFactor/100).toFixed(2)}x</>}>
+                                <FormField label={<>Volatility (v) : {volatility}%</>}>
                                     <Slider
-                                        onChange={({ detail }) => setUpFactor(detail.value)}
-                                        value={upFactor}
-                                        valueFormatter={upFactor => upFactor + "%"}
+                                        onChange={({ detail }) => setVolatility(detail.value)}
+                                        value={volatility}
+                                        valueFormatter={volatility => volatility + "%"}
+                                        max={100}
+                                        min={5}
+                                    />
+                                </FormField>
+                            </Box>
+                            {/* {(modelTask.value === "VPH") ? (<Box margin="xs" padding={{ top: "s" }}>
+                                <FormField label={<>Volatility (v) : {volatility}%</>}>
+                                    <Slider
+                                        onChange={({ detail }) => setVolatility(detail.value)}
+                                        value={volatility}
+                                        valueFormatter={volatility => volatility + "%"}
                                         max={100}
                                         min={1}
                                     />
                                 </FormField>
-                            </Box>
+                            </Box>) : null} */}
                             <Box margin="xs" padding={{ top: "s" }}>
-                                <FormField label={<>Depreciation factor (d) : {(1 - downFactor/100).toFixed(2)}x</>}>
+                                <FormField label={<>Step for volatility : {(volatilityStep/100).toFixed(2)}</>}>
                                     <Slider
-                                        onChange={({ detail }) => setDownFactor(detail.value)}
-                                        value={downFactor}
-                                        valueFormatter={downFactor => downFactor + "%"}
-                                        max={100}
+                                        onChange={({ detail }) => setVolatilityStep(detail.value)}
+                                        value={volatilityStep}
+                                        valueFormatter={volatilityStep => (volatilityStep/100).toFixed(2)}
+                                        max={10}
                                         min={1}
-                                    />
-                                </FormField>
-                            </Box>
-                            <Box margin="xs" padding={{ top: "s" }}>
-                                <SpaceBetween direction="horizontal" size='xs'>
-                                    <Checkbox
-                                        onChange={({ detail }) =>
-                                            setArbitrageAllowed(detail.checked)
-                                        }
-                                        checked={arbitrageallowed}
-                                        />
-                                        Enable Risk Free Arbitrage <Popover header="WARNING" content={<p>
-                                        {"The risk-free interest rate is capped acoording to 0 < d < 1 + r < u to prevent risk-free arbitrage opportunities"}
-                                    </p>}><Icon name="security"/></Popover>
-                                </SpaceBetween>
-                                <FormField label={<>Risk free interest rate (r) : {rate}%</>}>
-                                    <Slider
-                                        onChange={({ detail }) => setRate(detail.value)}
-                                        value={rate}
-                                        valueFormatter={rate => rate + "%"}
-                                        max={(arbitrageallowed) ? 100 : upFactor-1}
-                                        min={0}
-                                        step={.1}
+                                        disabled={modelTask.value === "OP"}
                                     />
                                 </FormField>
                             </Box>
@@ -237,8 +226,31 @@ export default function Inputs( {setParameters, setNavigationOpen} ) {
                                         value={evaluationPeriod}
                                         valueFormatter={evaluationPeriod => evaluationPeriod}
                                         max={500}
-                                        min={0}
+                                        min={10}
                                         step={1}
+                                    />
+                                </FormField>
+                            </Box>
+                            <Box margin="xs" padding={{ top: "s" }}>
+                                <SpaceBetween direction="horizontal" size='xs'>
+                                    <Checkbox
+                                        onChange={({ detail }) =>
+                                            setArbitrageAllowed(detail.checked)
+                                        }
+                                        checked={arbitrageallowed}
+                                        />
+                                        Enable Risk Free Arbitrage <Popover header="WARNING" content={<p>
+                                        {"The risk-free interest rate is capped acoording to 0 < d < 1 + r < u to prevent risk-free arbitrage opportunities"}
+                                    </p>}><Icon name="security"/></Popover>
+                                </SpaceBetween>
+                                <FormField label={<>Risk free interest rate (r) : {rate}%</>}>
+                                    <Slider
+                                        onChange={({ detail }) => setRate(detail.value)}
+                                        value={rate}
+                                        valueFormatter={rate => rate + "%"}
+                                        max={(arbitrageallowed) ? 100 : Math.min(15, Math.floor(volatility/(Math.sqrt(maturityTime/evaluationPeriod)) - 1))}
+                                        min={0}
+                                        step={.1}
                                     />
                                 </FormField>
                             </Box>
@@ -247,15 +259,15 @@ export default function Inputs( {setParameters, setNavigationOpen} ) {
                                     <Button 
                                         variant="normal"
                                         onClick={() => {
-                                            setUpFactor(7);
-                                            setDownFactor(3);
+                                            setVolatility(7);
                                             setStockPrice(100);
                                             setStrikePrice(105);
                                             setStep(5);
-                                            setRate(4.4);
+                                            setRate(2);
                                             setArbitrageAllowed(false);
                                             setMaturityTime(2);
                                             setEvaluationPeriod(10);
+                                            setVolatilityStep(5);
                                             setParameters(null);
                                         }}
                                     >
@@ -269,14 +281,14 @@ export default function Inputs( {setParameters, setNavigationOpen} ) {
                                             setParameters({
                                                 model: model["value"],
                                                 modelTask: modelTask["value"],
-                                                upFactor: (1+upFactor/100).toFixed(2),
-                                                downFactor: (1-downFactor/100).toFixed(2),
+                                                volatility: (volatility/100).toFixed(2),
                                                 stockPrice: stockPrice,
                                                 strikePrice: strikePrice,
                                                 step: step,
                                                 riskFreeInterestRate: (rate/100).toFixed(2),
                                                 maturityTime: maturityTime,
-                                                evaluationPeriod: evaluationPeriod
+                                                evaluationPeriod: evaluationPeriod,
+                                                volatilityStep: (volatilityStep/100).toFixed(2)
                                             });
                                         }}
                                     >

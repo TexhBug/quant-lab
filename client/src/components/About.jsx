@@ -3,7 +3,7 @@ import {
     ExpandableSection
 } from '@cloudscape-design/components';
 
-export default function () {
+export default function About() {
     return (
        <>
         <ExpandableSection headerText="Black-Scholes Model" defaultExpanded>
