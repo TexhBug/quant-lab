@@ -9,8 +9,6 @@ import {
 
 const HeatmapChart = ({ heatMap }) => {
     const [callHeatmap, putHeatmap]  = heatmapData(heatMap);
-    console.log(callHeatmap);
-    console.log(putHeatmap);
     const callHeatmapConfig = {
         data: callHeatmap,
         xField: "x",
@@ -43,7 +41,15 @@ const HeatmapChart = ({ heatMap }) => {
                     fontWeight: "bold",
                 },
             },
-        }
+        },
+        label: {
+            formatter: (data) => `${data.value}`,
+            style: {
+                fill: '#000',
+                fontSize: 10,
+                fontWeight: 'bold',
+            },
+        },
     };
     
     const putHeatmapConfig = {
@@ -78,7 +84,16 @@ const HeatmapChart = ({ heatMap }) => {
                     fontWeight: "bold",
                 },
             },
-        }
+        },
+        label: {
+            formatter: (data) => `${data.value}`,
+            style: {
+                fill: '#000',
+                fontSize: 10,
+                fontWeight: 'bold',
+            },
+        },
+
     };
     
     return (
