@@ -3,11 +3,11 @@ import {
     StatusIndicator,
     Modal
 } from '@cloudscape-design/components';
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import HeatmapChart from './HeatMapChart';
 import LoadingData from './LoadingData';
 
-export default function OutputHeatmap ({parameters}){
+export default function OutputHeatmap ({parameters}) {
     const API_BASE_URL = "http://127.0.0.1:5000";
     const [heatMap, setHeatMap] = useState(null);
     const [apiCall, setApiCall] = useState(null);
@@ -55,7 +55,7 @@ export default function OutputHeatmap ({parameters}){
     }, [parameters]);
     return(
         <>
-        {(heatMap) ? <HeatmapChart heatMap={heatMap}/> : ((apiCall !== null && apiCall === false) ? 
+        {(heatMap !== null) ? <HeatmapChart heatMap={heatMap}/> : ((apiCall !== null && apiCall === false) ? 
             <StatusIndicator type="error">Failed to get Heatmap for options</StatusIndicator> : 
             <LoadingData message={"Fetching Heatmap for call"}/> 
         )}

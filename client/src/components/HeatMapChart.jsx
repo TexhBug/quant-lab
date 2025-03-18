@@ -9,16 +9,13 @@ import {
 
 const HeatmapChart = ({ heatMap }) => {
     const [callHeatmap, putHeatmap]  = heatmapData(heatMap);
-
+    console.log(callHeatmap);
+    console.log(putHeatmap);
     const callHeatmapConfig = {
         data: callHeatmap,
         xField: "x",
         yField: "y",
         colorField: "value",
-        color: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"],
-        legend: {
-            position: "top",
-        },
         height: 600,
         tooltip: {
             formatter: (data) => {
@@ -42,25 +39,19 @@ const HeatmapChart = ({ heatMap }) => {
                     fontWeight: "bold",
                 },
             },
-        },
-        label: {
-            formatter: (data) => `${(data.value)}.`,
-            style: {
-                fill: "#000",
-                fontSize: 10,
-                fontWeight: "bold"
-            },
         }
     };
-
+    
     const putHeatmapConfig = {
         data: putHeatmap,
         xField: "x",
         yField: "y",
         colorField: "value",
-        color: ["#ebedf0", "#fff1f0", "#ff7875", "#ff4d4f", "#820014"],
         legend: {
-            position: "top",
+            position: "bottom",
+        },
+        scale: {
+            color: ["#ebedf0", "#fff1f0", "#ff7875", "#ff4d4f", "#820014"],
         },
         height: 600,
         tooltip: {
@@ -85,17 +76,9 @@ const HeatmapChart = ({ heatMap }) => {
                     fontWeight: "bold",
                 },
             },
-        },
-        label: {
-            formatter: (data) => `${(data.value)}.`,
-            style: {
-                fill: "#000",
-                fontSize: 10,
-                fontWeight: "bold"
-            },
         }
     };
-
+    
     return (
         <>
             <ExpandableSection headerText="Heatmap for Call option" defaultExpanded={true}>
