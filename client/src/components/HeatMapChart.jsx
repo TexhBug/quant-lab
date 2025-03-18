@@ -16,6 +16,10 @@ const HeatmapChart = ({ heatMap }) => {
         xField: "x",
         yField: "y",
         colorField: "value",
+        legend: {
+            position: "top",
+        },
+        color: ["#e6f7e6", "#b7eb8f", "#73d13d", "#52c41a", "#237804"],
         height: 600,
         tooltip: {
             formatter: (data) => {
@@ -48,11 +52,9 @@ const HeatmapChart = ({ heatMap }) => {
         yField: "y",
         colorField: "value",
         legend: {
-            position: "bottom",
+            position: "top",
         },
-        scale: {
-            color: ["#ebedf0", "#fff1f0", "#ff7875", "#ff4d4f", "#820014"],
-        },
+        color: ["#fff1f0", "#ffccc7", "#ff7875", "#ff4d4f", "#820014"],
         height: 600,
         tooltip: {
             formatter: (data) => {
