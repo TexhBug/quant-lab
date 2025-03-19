@@ -57,7 +57,7 @@ export default function OutputHeatmap ({parameters}) {
         <>
         {(heatMap !== null) ? <HeatmapChart heatMap={heatMap}/> : ((apiCall !== null && apiCall === false) ? 
             <StatusIndicator type="error">Failed to get Heatmap for options</StatusIndicator> : 
-            <LoadingData message={"Fetching Heatmap for call"}/> 
+            <LoadingData message={"Fetching Heatmap for options (Call & Put) : Could take 30 - 50 sec if instance is asleep"}/>
         )}
         <Modal
             onDismiss={() => setErrorModal(false)}
